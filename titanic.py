@@ -1,30 +1,18 @@
-try:
-    import pandas as pd
-    from catboost.datasets import titanic
-except ModuleNotFoundError:
-    print("Some required modules are not installed. Installing them now...")
-    # Установка pandas и catboost
-    try:
-        import subprocess
-        subprocess.check_call(['pip', 'install', 'pandas', 'catboost'])
-    except Exception as e:
-        print(f"Failed to install required modules: {e}")
-        exit(1)
+# titanic.py
+
+import pandas as pd
+from catboost.datasets import titanic
 
 # Загрузка данных о пассажирах "Титаника"
 train_df, _ = titanic()
 titanic_dataset = train_df.copy()
 
-# Создание нового датасета с информацией о классе, поле и возрасте
-additional_info = pd.DataFrame({
-    'Pclass': [1, 2, 3],
-    'Sex': ['male', 'female', 'male'],
-    'Age': [30, 25, 22]
-})
+# Заполнение пропущенных значений в поле "Age" средним значением
+titanic_dataset['Age'].fillna(titanic_dataset['Age'].mean(), inplace=True)
 
-# Объединение датасетов
-titanic_dataset_extended = pd.concat([titanic_dataset, additional_info], axis=1)
+# Создание нового признака с использованием one-hot-encoding для поля "Sex"
+titanic_dataset = pd.get_dummies(titanic_dataset, columns=['Sex'], drop_first=True)
 
-# Сохранение расширенного датасета в CSV файл
-titanic_dataset_extended.to_csv("titanic_dataset_extended.csv", index=False)
+# Сохранение датасета в CSV файл
+titanic_dataset.to_csv("titanic_dataset_updated.csv", index=False)
 
